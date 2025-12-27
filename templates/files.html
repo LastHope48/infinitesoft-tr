@@ -5,10 +5,16 @@
 </head>
 <body>
     <h1>Yüklenen Dosyalar</h1>
-    <ul>
-  {% for f in files %}
-    <li><a href="{{ url_for('uploaded_file', filename=f) }}">{{ f }}</a></li>
+<ul>
+  {% for media in files %}
+    <li>
+      {{ media.filename }} -
+      <a href="{{ url_for('download_file', media_id=media.id) }}">İndir</a>
+    </li>
+  {% else %}
+    <li>Hiç dosya yok.</li>
   {% endfor %}
 </ul>
+<a href="/infinitecloud/files/download_all">Dosyaları sıfırla</a>
 </body>
 </html>

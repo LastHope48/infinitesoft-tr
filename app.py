@@ -1,5 +1,6 @@
 import os,uuid
-from flask import Flask,render_template,render_template_string,request,send_from_directory
+from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file
+import io
 from flask_sqlalchemy import SQLAlchemy
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diary.db'
@@ -9,47 +10,61 @@ UPLOAD_PASSWORD="ff'gho113"
 app.config["UPLOAD_FOLDER"]="uploads"
 ALLOWED={"png","jpg","jpeg","mp4","mov"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
+class Media(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    filename=db.Column(db.String(200))
+    data=db.Column(db.LargeBinary)
 def allowed(filename):
     return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED
-HTML="""
-<form method="post" enctype="multipart/form-data">
-    <input type="password" name="password" placeholder="Şifre" required><br><br>
-    <input type="file" name="file" required><br><br>
-    <button>Yükle</button>
-</form>
-<p>{{msg}}</p>
-"""
-
-
 @app.route("/")
 def projects():
     return render_template("projects.html")
 @app.route("/infinitecloud")
 def cloud():
     return render_template("home_cloud.html")
-@app.route("/infinitecloud/upload",methods=["GET","POST"])
+@app.route("/infinitecloud/upload", methods=["GET", "POST"])
 def upload():
-    msg=""
-    if request.method=="POST":
-        if request.form["password"]!=UPLOAD_PASSWORD:
-            msg="❌ Şifre yanlış"
+    msg = ""
+    if request.method == "POST":
+        if request.form["password"] != UPLOAD_PASSWORD:
+            msg = "❌ Şifre yanlış"
         else:
-            file=request.files["file"]
+            file = request.files["file"]
             if file and allowed(file.filename):
-                os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok=True)
-                ext=file.filename.rsplit(".",1)[1]
-                name=f"{uuid.uuid4()}.{ext}"
-                file.save(os.path.join(app.config["UPLOAD_FOLDER"],name))
-                msg="✅ Dosya yüklendi"
+                # Dosya adı oluştur
+                ext = file.filename.rsplit(".", 1)[1].lower()
+                unique_name = f"{uuid.uuid4()}.{ext}"
+
+                # Dosyayı veritabanına kaydet
+                media = Media(filename=unique_name, data=file.read())
+                db.session.add(media)
+                db.session.commit()
+
+                msg = "✅ Dosya veritabanına kaydedildi"
             else:
-                msg="❌ Geçersiz dosya"
-    return render_template("upload.html",msg=msg)
-@app.route("/infinitecloud/upload/<filename>")
-def uploaded_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"],filename)
+                msg = "❌ Geçersiz dosya"
+    return render_template("upload.html", msg=msg)
+@app.route("/infinitecloud/files/<int:media_id>/download")
+def download_file(media_id):
+    media = Media.query.get_or_404(media_id)
+    return send_file(
+        io.BytesIO(media.data),        # Binary veriyi oku
+        as_attachment=True,            # İndirme olarak sun
+        download_name=media.filename   # Dosya adı
+    )
 @app.route("/infinitecloud/files")
 def files():
-    files=os.listdir(app.config["UPLOAD_FOLDER"])
-    return render_template("files.html",files=files)
+    medias=Media.query.all()
+    return render_template("files.html",files=medias)
+@app.route("/infinitecloud/files/download_all")
+def download_all():
+    medias=Media.query.all()
+    os.makedirs("backup",exist_ok=True)
+    for media in medias:
+        with open(os.path.join("backup",media.filename),"wb") as f:
+            f.write(media.data)
+        db.session.delete(media)
+    db.session.commit()
+    return "Sıfırlandı"
 if __name__=="__main__":
     app.run(debug=True)
