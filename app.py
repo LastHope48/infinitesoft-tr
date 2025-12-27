@@ -1,6 +1,6 @@
 import os,uuid
 from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file
-import io
+import io,zipfile
 from flask_sqlalchemy import SQLAlchemy
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diary.db'
@@ -58,13 +58,30 @@ def files():
     return render_template("files.html",files=medias)
 @app.route("/infinitecloud/files/download_all")
 def download_all():
-    medias=Media.query.all()
-    os.makedirs("backup",exist_ok=True)
+    medias = Media.query.all()
+    
+    if not medias:
+        return "Hiç dosya yok."
+    
+    # Zip buffer oluştur
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+        for media in medias:
+            zip_file.writestr(media.filename, media.data)  # Veritabanındaki veriyi zip'e ekle
+    
+    zip_buffer.seek(0)
+    
+    # Veritabanını temizle
     for media in medias:
-        with open(os.path.join("backup",media.filename),"wb") as f:
-            f.write(media.data)
         db.session.delete(media)
     db.session.commit()
-    return "Sıfırlandı"
+    
+    # Zip dosyasını indir
+    return send_file(
+        zip_buffer,
+        as_attachment=True,
+        download_name="all_files.zip",
+        mimetype="application/zip"
+    )
 if __name__=="__main__":
     app.run(debug=True)
