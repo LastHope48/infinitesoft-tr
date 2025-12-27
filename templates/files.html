@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dosyalar</title>
+</head>
+<body>
+    <h1>Yüklenen Dosyalar</h1>
+    <ul>
+  {% for f in files %}
+    <li><a href="{{ url_for('uploaded_file', filename=f) }}">{{ f }}</a></li>
+  {% endfor %}
+</ul>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import os,uuid
-from flask import Flask,render_template,render_template_string,request
+from flask import Flask,render_template,render_template_string,request,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diary.db'
@@ -44,5 +44,12 @@ def upload():
             else:
                 msg="❌ Geçersiz dosya"
     return render_template("upload.html",msg=msg)
+@app.route("/infinitecloud/upload/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"],filename)
+@app.route("/infinitecloud/files")
+def files():
+    files=os.listdir(app.config["UPLOAD_FOLDER"])
+    return render_template("files.html",files=files)
 if __name__=="__main__":
     app.run(debug=True)
