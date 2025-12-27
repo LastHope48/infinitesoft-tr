@@ -1,0 +1,35 @@
+body {
+    background: #0f172a;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+.upload-box {
+    width: 320px;
+    margin: 100px auto;
+    padding: 25px;
+    background: #020617;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.6);
+    text-align: center;
+}
+
+.upload-box input,
+.upload-box button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+.upload-box button {
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+.msg {
+    margin-top: 15px;
+    font-weight: bold;
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>InfiniteCloud Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/decor_upload.css') }}">
+</head>
+<body>
+
+<div class="upload-box">
+    <h2>Dosya Yükle</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        <input type="password" name="password" placeholder="Şifre" required>
+        <input type="file" name="file" required>
+        <button type="submit">Yükle</button>
+    </form>
+
+    {% if msg %}
+        <p class="msg">{{ msg }}</p>
+    {% endif %}
+</div>
+
+</body>
+</html>
