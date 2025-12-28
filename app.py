@@ -2,8 +2,9 @@ import os,uuid
 from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file
 import io,zipfile
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 app=Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diary.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin_infinitesofttr:kQcMy3cWCcj1gMgJWs3aMwb3XqwRFbnA@dpg-d58dlashg0os73bo9l4g-a:5432/infinitesoft_cloud'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app )
 UPLOAD_PASSWORD="ff'gho113"
@@ -14,6 +15,7 @@ class Media(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     filename=db.Column(db.String(200))
     data=db.Column(db.LargeBinary)
+    created_at=db.Column(db.DateTime,default=datetime.utcnow)
 def allowed(filename):
     return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED
 @app.route("/")
