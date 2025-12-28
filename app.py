@@ -85,5 +85,7 @@ def download_all():
         download_name="all_files.zip",
         mimetype="application/zip"
     )
+with app.app_context():
+    db.create_all()
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run()
