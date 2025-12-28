@@ -4,3 +4,58 @@
     color: #9fffe0;
     opacity: 0.85;
 }
+body {
+    background: black;
+    color: aquamarine;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.files-page {
+    text-align: center;
+    padding: 40px;
+}
+
+.cloud-img {
+    width: 300px;
+    margin: 20px auto;
+    display: block;
+}
+
+.file-list {
+    list-style: none;
+    padding: 0;
+    max-width: 600px;
+    margin: 0 auto 30px;
+}
+
+.file-list li {
+    display: flex;
+    justify-content: space-between;
+    background: #111;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    border: 1px solid #2affc6;
+}
+
+.file-list a {
+    color: #00ff99;
+    text-decoration: none;
+}
+
+.file-list a:hover {
+    text-decoration: underline;
+}
+
+.danger-btn {
+    color: red;
+    border: 1px solid red;
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+}
+
+.danger-btn:hover {
+    background: red;
+    color: black;
+}

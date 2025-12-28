@@ -24,7 +24,6 @@ def projects():
     return render_template("projects.html")
 @app.route("/infinitecloud")
 def cloud():
-    files_count = db.session.query(func.count(Media.id)).scalar()
     return render_template("home_cloud.html")
 @app.route("/infinitecloud/upload", methods=["GET", "POST"])
 def upload():
@@ -58,8 +57,9 @@ def download_file(media_id):
     )
 @app.route("/infinitecloud/files")
 def files():
+    files_count = db.session.query(func.count(Media.id)).scalar()
     medias=Media.query.all()
-    return render_template("files.html",files=medias)
+    return render_template("files.html",files=medias,files_count=files_count)
 @app.route("/infinitecloud/files/download_all")
 def download_all():
     medias = Media.query.all()
