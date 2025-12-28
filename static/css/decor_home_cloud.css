@@ -1,45 +1,74 @@
 body {
-    background-color: black;
+    min-height: 100vh;
+    margin: 0;
+    background: radial-gradient(circle at top, #0f2027, #000);
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
-::selection {
-    background: gray;
-    color: aquamarine;
-}
+
+/* başlık */
 .sirketbaslik {
     text-align: center;
-    color: aqua;
-    font-size: 50px;
+    color: #7fffd4;
+    font-size: 42px;
+    margin-top: 60px;
+    margin-bottom: 50px;
+    letter-spacing: 1px;
 }
-ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
+
+/* liste */
 .list {
     display: flex;
     justify-content: center;
+    gap: 60px;
+    padding-bottom: 80px;
 }
+
+/* kart */
 .list__item a {
-    text-decoration: none;
+    width: 260px;
+    height: 300px;
+
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    color: inherit;
-    gap: 20px;
-    padding: 20px;
-    border-radius: 24px;
-    border: 1px solid #EB8028;
-    transition: 0.2s;
-}
-.item__img {
-    object-fit: contain;
-    width: 150px;
-}
-.list__item a:hover {
-    box-shadow: 1px 1px 4px 4px greenyellow;
-}
-.list__item span {
+
+    text-decoration: none;
     color: aquamarine;
-    font-size: 50px;
-    font-family: Arial, Helvetica, sans-serif;
+
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    box-shadow: 0 0 30px rgba(0, 255, 180, 0.12);
+    transition: 0.3s ease;
+}
+
+/* hover efekti */
+.list__item a:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 0 45px rgba(0, 255, 180, 0.5);
+}
+
+/* ikon */
+.item__img {
+    width: 130px;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 0 10px rgba(0,255,200,0.5));
+}
+
+/* yazı */
+.list__item span {
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* seçim */
+::selection {
+    background: aquamarine;
+    color: black;
 }

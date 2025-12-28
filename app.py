@@ -1,5 +1,6 @@
 import os,uuid
-from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file
+from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file,redirect
+from sqlalchemy import func
 import io,zipfile
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -23,6 +24,7 @@ def projects():
     return render_template("projects.html")
 @app.route("/infinitecloud")
 def cloud():
+    files_count = db.session.query(func.count(Media.id)).scalar()
     return render_template("home_cloud.html")
 @app.route("/infinitecloud/upload", methods=["GET", "POST"])
 def upload():
@@ -85,6 +87,14 @@ def download_all():
         download_name="all_files.zip",
         mimetype="application/zip"
     )
+@app.route("/infinitecloud/check",methods=["GET","POST"])
+def check():
+    msg=""
+    if request.method=="POST":
+        if request.form["password"]!=UPLOAD_PASSWORD:
+            msg="❌ Şifre yanlış"
+        else:
+            return redirect("/infinitecloud/files",msg=msg)
 with app.app_context():
     db.create_all()
 if __name__=="__main__":

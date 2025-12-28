@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Dosyalar</title>
+    <link rel="stylesheet" href="../static/css/decor_files.css">
 </head>
 <body>
     <h1>Yüklenen Dosyalar</h1>
@@ -15,6 +16,14 @@
     <li>Hiç dosya yok.</li>
   {% endfor %}
 </ul>
+<li class="list__item">
+    <a href="{{ url_for('files') }}">
+        <img src="../static/img/upload-icon-4.png" class="item__img">
+        <span>Dosyalar</span>
+        <small class="counter">📁 {{ files_count }} dosya</small>
+    </a>
+</li>
+
 <a href="/infinitecloud/files/download_all">Dosyaları sıfırla</a>
 </body>
 </html>
