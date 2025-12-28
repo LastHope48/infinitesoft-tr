@@ -4,7 +4,7 @@ import io,zipfile
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 app=Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin_infinitesofttr:kQcMy3cWCcj1gMgJWs3aMwb3XqwRFbnA@dpg-d58dlashg0os73bo9l4g-a:5432/infinitesoft_cloud'
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://admin_infinitesofttr:kQcMy3cWCcj1gMgJWs3aMwb3XqwRFbnA@dpg-d58dlashg0os73bo9l4g-a/medias"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app )
 UPLOAD_PASSWORD="ff'gho113"
