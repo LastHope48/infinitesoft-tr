@@ -4,26 +4,32 @@
     <title>Dosyalar</title>
     <link rel="stylesheet" href="../static/css/decor_files.css">
 </head>
-<body>
-    <h1>Yüklenen Dosyalar</h1>
-<ul>
-  {% for media in files %}
-    <li>
-      {{ media.filename }} -
-      <a href="{{ url_for('download_file', media_id=media.id) }}">İndir</a>
-    </li>
-  {% else %}
-    <li>Hiç dosya yok.</li>
-  {% endfor %}
-</ul>
-<li class="list__item">
-    <a href="{{ url_for('files') }}">
-        <img src="../static/img/upload-icon-4.png" class="item__img">
-        <span>Dosyalar</span>
-        <small class="counter">📁 {{ files_count }} dosya</small>
-    </a>
-</li>
+<body class="files-page">
 
-<a href="/infinitecloud/files/download_all">Dosyaları sıfırla</a>
+    <h1>Yüklenen Dosyalar</h1>
+
+    <img src="../static/img/upload-icon-4.png" class="cloud-img">
+
+    <ul class="file-list">
+        {% for media in files %}
+        <li>
+            <span>{{ media.filename }}</span>
+            <a href="{{ url_for('download_file', media_id=media.id) }}">İndir</a>
+        </li>
+        {% else %}
+        <li>Hiç dosya yok.</li>
+        {% endfor %}
+    </ul>
+
+    <div class="counter">
+        📁 {{ files_count }} dosya
+    </div>
+
+    <br>
+
+    <a href="/infinitecloud/files/download_all" class="danger-btn">
+        Dosyaları sıfırla
+    </a>
+
 </body>
 </html>
