@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Reset</title>
+</head>
+<body>
+    <h2>🔐 Dosyaları Sıfırla (Admin)</h2>
+
+    <form method="post">
+        <input type="password" name="password" placeholder="Admin şifresi" required>
+        <button type="submit">Giriş</button>
+    </form>
+
+    {% if msg %}
+        <p>{{ msg }}</p>
+    {% endif %}
+</body>
+</html>

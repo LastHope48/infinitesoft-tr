@@ -26,10 +26,14 @@
     </div>
 
     <br>
-
     <a href="/infinitecloud/files/download_all" class="danger-btn">
-        Dosyaları sıfırla
+        Tüm Dosyaları İndir
     </a>
+    <form action="/infinitecloud/reset" method="post"
+      onsubmit="return confirm('EMİN MİSİN? TÜM DOSYALAR SİLİNECEK!')">
+    <button style="color:red;">🚨 TÜM DOSYALARI SIFIRLA</button>
+</form>
+
 
 </body>
 </html>
