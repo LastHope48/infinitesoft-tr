@@ -6,20 +6,36 @@
     <link rel="stylesheet" href="../static/css/decor_home_cloud.css">
 </head>
 <body>
-    <h1 class="sirketbaslik">Infinitesoft-tr'nin yapmış olduğu Infinitecloud uygulamasına göz atın!</h1>
+
+    <h1 class="sirketbaslik">
+        Infinitesoft-tr'nin yapmış olduğu Infinitecloud uygulamasına göz atın!
+    </h1>
+
     <ul class="list">
+        <!-- YÜKLE -->
         <li class="list__item">
-            <a href="{{url_for ('upload')}}">
-                <img class="item__img" src="../static/img/upload-icon-4.png" alt="bulut">
-                <span>Yükle!</span>
+            <a href="{{ url_for('upload') }}">
+                <img class="item__img" src="../static/img/upload-icon-4.png" alt="yükle">
+                <span>Yükle</span>
             </a>
         </li>
+
+        <!-- DOSYALAR -->
         <li class="list__item">
-            <a href="{{url_for ('files')}}">
-                <img src="../static/img/upload-icon-4.png" alt="bulut" class="item__img">
+            <a href="{{ url_for('files') }}">
+                <img class="item__img" src="../static/img/upload-icon-4.png" alt="dosyalar">
                 <span>Dosyalar</span>
             </a>
         </li>
+
+        <!-- ADMIN -->
+        <li class="list__item admin-item">
+            <a href="{{ url_for('reset_login') }}">
+                <img class="item__img" src="../static/img/admin-icon.png" alt="admin">
+                <span>Admin</span>
+            </a>
+        </li>
     </ul>
+
 </body>
 </html>

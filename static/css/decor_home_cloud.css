@@ -72,3 +72,14 @@ body {
     background: aquamarine;
     color: black;
 }
+/* Admin özel stil */
+.admin-item a {
+    border: 2px solid gold;
+    border-radius: 12px;
+    background: rgba(255, 215, 0, 0.05);
+}
+
+.admin-item span {
+    color: gold;
+    font-weight: bold;
+}
