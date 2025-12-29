@@ -26,13 +26,22 @@
     </div>
 
     <br>
-    <a href="/infinitecloud/files/download_all" class="danger-btn">
-        Tüm Dosyaları İndir
+<div class="action-bar">
+
+    <a href="{{ url_for('download_all') }}" class="download-btn">
+        ⬇️ Tüm Dosyaları İndir
     </a>
-    <form action="/infinitecloud/reset" method="post"
-      onsubmit="return confirm('EMİN MİSİN? TÜM DOSYALAR SİLİNECEK!')">
-    <button style="color:red;">🚨 TÜM DOSYALARI SIFIRLA</button>
-</form>
+
+    {% if can_reset %}
+    <form action="{{ url_for('reset_files') }}" method="post"
+          onsubmit="return confirm('EMİN MİSİN? TÜM DOSYALAR SİLİNECEK!')">
+        <button type="submit" class="danger-btn">
+            🚨 Tüm Dosyaları Sil
+        </button>
+    </form>
+    {% endif %}
+
+</div>
 
 
 </body>
