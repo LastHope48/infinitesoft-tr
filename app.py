@@ -59,12 +59,21 @@ def download_file(media_id):
         as_attachment=True,            # İndirme olarak sun
         download_name=media.filename   # Dosya adı
     )
+@app.route("/infinitecloud/files/<int:media_id>/delete")
+def delete_file(media_id):
+    if not session.get("can_delete"):
+        return redirect("/infinitecloud/reset-login")
+    media=Media.query.get_or_404(media_id)
+    db.session.delete(media)
+    db.session.commit()
+    return redirect("/infinitecloud/files")
 @app.route("/infinitecloud/reset-login", methods=["GET", "POST"])
 def reset_login():
     msg = ""
     if request.method == "POST":
         if check_password_hash(ADMIN_PASSWORD_HASH, request.form["password"]):
             session["can_reset"] = True
+            session["can_delete"]=True
             return redirect("/infinitecloud/files")
         else:
             msg = "❌ Admin şifre yanlış"
@@ -91,7 +100,8 @@ def files():
         "files.html",
         files=medias,
         files_count=files_count,
-        can_reset=session.get("can_reset", False)
+        can_reset=session.get("can_reset", False),
+        can_delete=session.get("can_delete",False)
     )
 @app.route("/infinitecloud/files/download_all")
 def download_all():

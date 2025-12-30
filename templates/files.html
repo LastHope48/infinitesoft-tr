@@ -14,6 +14,9 @@
         {% for media in files %}
         <li>
             <span>{{ media.filename }}</span>
+            {% if can_delete %}
+            <a href="{{url_for ('delete_file',media_id=media.id)}}">Sil</a>
+            {% endif %}
             <a href="{{ url_for('download_file', media_id=media.id) }}">İndir</a>
         </li>
         {% else %}
