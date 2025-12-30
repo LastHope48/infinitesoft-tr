@@ -33,3 +33,18 @@ body {
     margin-top: 15px;
     font-weight: bold;
 }
+.site-footer{
+  margin-top: 80px;
+  padding: 20px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+  color: #f5deb3;
+  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  z-index: 2;
+}
+
+.site-footer p{
+  margin: 0;
+}
