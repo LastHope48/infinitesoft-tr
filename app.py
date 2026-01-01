@@ -25,12 +25,17 @@ ADMIN_PASSWORD_HASH = generate_password_hash("koalfret4938(poxz'')")
 app.config["UPLOAD_FOLDER"]="uploads"
 ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
+
 class Media(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     original_name=db.Column(db.String(200))
     stored_name=db.Column(db.String(200))
     data=db.Column(db.LargeBinary)
     created_at=db.Column(db.DateTime,default=datetime.utcnow)
+    download_count=db.Column(db.Integer,default=0)
+    is_private = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
+    owner_session = db.Column(db.String(100))         
+
 def allowed(filename):
     return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED
 @app.route("/")
@@ -56,25 +61,27 @@ def upload():
             return render_template("upload.html", msg="❌ Şifre yanlış")
 
         file = request.files.get("file")
-
         if not file or not allowed(file.filename):
             return render_template("upload.html", msg="❌ Geçersiz dosya")
 
         original_name = secure_filename(file.filename)
         ext = original_name.rsplit(".", 1)[1].lower()
 
-        # Aynı isim var mı?
         exists = Media.query.filter_by(original_name=original_name).first()
+        stored_name = f"{uuid.uuid4()}.{ext}" if exists else original_name
 
-        if exists:
-            stored_name = f"{uuid.uuid4()}.{ext}"
-        else:
-            stored_name = original_name
+        is_private = "is_private" in request.form
+
+        # uploader session
+        if "uploader_id" not in session:
+            session["uploader_id"] = str(uuid.uuid4())
 
         media = Media(
             original_name=original_name,
             stored_name=stored_name,
-            data=file.read()
+            data=file.read(),
+            is_private=is_private,
+            owner_session=session["uploader_id"]
         )
 
         db.session.add(media)
@@ -88,14 +95,26 @@ def upload():
 def download_file(media_id):
     media = Media.query.get_or_404(media_id)
 
+    if media.is_private:
+        if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
+            return "❌ Bu dosya gizli", 403
+
+    media.download_count += 1
+    db.session.commit()
+
     return send_file(
         io.BytesIO(media.data),
         as_attachment=True,
         download_name=media.original_name
     )
+
 @app.route("/infinitecloud/files/<int:media_id>")
 def look(media_id):
     media = Media.query.get_or_404(media_id)
+
+    if media.is_private:
+        if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
+            return "❌ Bu dosya gizli", 403
 
     return send_file(
         io.BytesIO(media.data),
@@ -138,15 +157,27 @@ def reset_files():
 
 @app.route("/infinitecloud/files")
 def files():
-    files_count = db.session.query(func.count(Media.id)).scalar()
-    medias = Media.query.all()
+    uploader_id = session.get("uploader_id")
+    is_admin = session.get("can_delete", False)
+
+    if is_admin:
+        medias = Media.query.all()
+    else:
+        medias = Media.query.filter(
+            (Media.is_private == False) |
+            (Media.owner_session == uploader_id)
+        ).all()
+
+    files_count = len(medias)
+
     return render_template(
         "files.html",
         files=medias,
         files_count=files_count,
         can_reset=session.get("can_reset", False),
-        can_delete=session.get("can_delete",False)
+        can_delete=is_admin
     )
+
 @app.route("/infinitecloud/files/download_all")
 def download_all():
     medias = Media.query.all()

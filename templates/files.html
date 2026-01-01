@@ -13,6 +13,7 @@
     <ul class="file-list">
         {% for media in files %}
         <li>
+            <span>⬇️ {{ file.download_count }} indirme</span>
             <span>{{ media.original_name }}</span>
             {% if can_delete %}
             <a href="{{url_for ('delete_file',media_id=media.id)}}">Sil</a>
