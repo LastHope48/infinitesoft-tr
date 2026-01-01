@@ -5,6 +5,7 @@ from sqlalchemy import func
 import io,zipfile
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from werkzeug.utils import secure_filename
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://admin_infinitesofttr:kQcMy3cWCcj1gMgJWs3aMwb3XqwRFbnA@dpg-d58dlashg0os73bo9l4g-a/medias"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -13,11 +14,12 @@ app.secret_key=os.urandom(32)
 UPLOAD_PASSWORD=generate_password_hash("ff'gho113")
 ADMIN_PASSWORD_HASH = generate_password_hash("koalfret4938(poxz'')")
 app.config["UPLOAD_FOLDER"]="uploads"
-ALLOWED={"png","jpg","jpeg","mp4","mov"}
+ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
 class Media(db.Model):
     id=db.Column(db.Integer,primary_key=True)
-    filename=db.Column(db.String(200))
+    original_name=db.Column(db.String(200))
+    stored_name=db.Column(db.String(200))
     data=db.Column(db.LargeBinary)
     created_at=db.Column(db.DateTime,default=datetime.utcnow)
 def allowed(filename):
@@ -38,15 +40,16 @@ def upload():
         else:
             file = request.files["file"]
             if file and allowed(file.filename):
-                # Dosya adı oluştur
-                ext = file.filename.rsplit(".", 1)[1].lower()
-                unique_name = f"{uuid.uuid4()}.{ext}"
-
-                # Dosyayı veritabanına kaydet
-                media = Media(filename=unique_name, data=file.read())
+                original_name = secure_filename(file.filename)
+                ext = original_name.rsplit(".", 1)[1].lower()
+                stored_name = f"{uuid.uuid4()}.{ext}"
+                media = Media(
+                    original_name=original_name,
+                    stored_name=stored_name,
+                    data=file.read()
+                )
                 db.session.add(media)
                 db.session.commit()
-
                 msg = "✅ Dosya veritabanına kaydedildi"
             else:
                 msg = "❌ Geçersiz dosya"
@@ -54,11 +57,22 @@ def upload():
 @app.route("/infinitecloud/files/<int:media_id>/download")
 def download_file(media_id):
     media = Media.query.get_or_404(media_id)
+
     return send_file(
-        io.BytesIO(media.data),        # Binary veriyi oku
-        as_attachment=True,            # İndirme olarak sun
-        download_name=media.filename   # Dosya adı
+        io.BytesIO(media.data),
+        as_attachment=True,
+        download_name=media.original_name
     )
+@app.route("/infinitecloud/files/<int:media_id>")
+def look(media_id):
+    media = Media.query.get_or_404(media_id)
+
+    return send_file(
+        io.BytesIO(media.data),
+        as_attachment=False,
+        download_name=media.original_name
+    )
+
 @app.route("/infinitecloud/files/<int:media_id>/delete")
 def delete_file(media_id):
     if not session.get("can_delete"):
