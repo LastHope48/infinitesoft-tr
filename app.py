@@ -30,6 +30,14 @@ def projects():
 @app.route("/infinitecloud")
 def cloud():
     return render_template("home_cloud.html")
+@app.route("/__reset_db__")
+def reset_db():
+    if not session.get("can_delete"):
+        return redirect("/infinitecloud/reset-login")
+    db.drop_all()
+    db.create_all()
+    return "DB sıfırlandı ✅"
+
 @app.route("/infinitecloud/upload", methods=["GET", "POST"])
 def upload():
     msg = ""
