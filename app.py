@@ -33,27 +33,40 @@ def cloud():
 @app.route("/infinitecloud/upload", methods=["GET", "POST"])
 def upload():
     msg = ""
+
     if request.method == "POST":
         if not check_password_hash(UPLOAD_PASSWORD, request.form["password"]):
+            return render_template("upload.html", msg="❌ Şifre yanlış")
 
-            msg = "❌ Şifre yanlış"
+        file = request.files.get("file")
+
+        if not file or not allowed(file.filename):
+            return render_template("upload.html", msg="❌ Geçersiz dosya")
+
+        original_name = secure_filename(file.filename)
+        ext = original_name.rsplit(".", 1)[1].lower()
+
+        # Aynı isim var mı?
+        exists = Media.query.filter_by(original_name=original_name).first()
+
+        if exists:
+            stored_name = f"{uuid.uuid4()}.{ext}"
         else:
-            file = request.files["file"]
-            if file and allowed(file.filename):
-                original_name = secure_filename(file.filename)
-                ext = original_name.rsplit(".", 1)[1].lower()
-                stored_name = f"{uuid.uuid4()}.{ext}"
-                media = Media(
-                    original_name=original_name,
-                    stored_name=stored_name,
-                    data=file.read()
-                )
-                db.session.add(media)
-                db.session.commit()
-                msg = "✅ Dosya veritabanına kaydedildi"
-            else:
-                msg = "❌ Geçersiz dosya"
+            stored_name = original_name
+
+        media = Media(
+            original_name=original_name,
+            stored_name=stored_name,
+            data=file.read()
+        )
+
+        db.session.add(media)
+        db.session.commit()
+
+        msg = "✅ Dosya yüklendi"
+
     return render_template("upload.html", msg=msg)
+
 @app.route("/infinitecloud/files/<int:media_id>/download")
 def download_file(media_id):
     media = Media.query.get_or_404(media_id)
