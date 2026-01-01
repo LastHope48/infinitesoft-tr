@@ -7,7 +7,16 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.utils import secure_filename
 app=Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://admin_infinitesofttr:kQcMy3cWCcj1gMgJWs3aMwb3XqwRFbnA@dpg-d58dlashg0os73bo9l4g-a/medias"
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local.db"
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app )
 app.secret_key=os.urandom(32)
@@ -147,7 +156,7 @@ def download_all():
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w") as zip_file:
         for media in medias:
-            zip_file.writestr(media.filename, media.data)
+            zip_file.writestr(media.original_name, media.data)
 
     zip_buffer.seek(0)
 
