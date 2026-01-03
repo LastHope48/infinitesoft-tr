@@ -25,7 +25,19 @@ ADMIN_PASSWORD_HASH = generate_password_hash("koalfret4938(poxz'')")
 app.config["UPLOAD_FOLDER"]="uploads"
 ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
-
+class Account(db.Model):
+    name=db.Column(db.String(20),nullable=False,unique=True)
+    password=db.Column(db.String(100),nullable=False)
+    id=db.Column(db.Integer,primary_key=True)
+    def __repr__(self):
+        return f"<Account {self.id}"
+class Card(db.Model):
+    title=db.Column(db.String(100),nullable=False)
+    subtitle=db.Column(db.String(100),nullable=False)
+    text=db.Column(db.String(600),nullable=False)
+    id=db.Column(db.Integer,primary_key=True)
+    def __repr__(self):
+        return f"<Card {self.id}>"
 class Media(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     original_name=db.Column(db.String(200))
@@ -51,7 +63,85 @@ def reset_db():
     db.drop_all()
     db.create_all()
     return "DB sıfırlandı ✅"
+@app.route("/camsepeti/home")
+def home_shop():
+    if "user_id" not in session:
+        return redirect("/camsepeti")
+    return render_template("home.html")
+@app.route("/camsepeti/sepete_ekle",methods=["POST"])
+def sepete_ekle():
+    if "user_id" not in session:
+        return redirect("/camsepeti")
+    urun={
+        "ad": request.form["ad"],
+        "fiyat": request.form["fiyat"],
+        "resim":request.form["resim"]
+    }
+    if "sepet" not in session:
+        session["sepet"]=[]
+    sepet=session["sepet"]
+    sepet.append(urun)
+    session["sepet"]=sepet
+    return redirect("/camsepeti/home")
+@app.route("/camsepeti/sepet_sil", methods=["POST"])
+def sepet_sil():
+    if "user_id" not in session:
+        return redirect("/camsepeti")
+    index = int(request.form["index"])
 
+    sepet = session.get("sepet", [])
+
+    if 0 <= index < len(sepet):
+        sepet.pop(index)
+        session["sepet"] = sepet
+
+    return redirect("/camsepeti/sepet")
+@app.route("/camsepeti/buy_success",methods=["POST"])
+def buy_success():
+    if "user_id" not in session:
+        return redirect("/camsepeti")
+    return render_template("buy_success.html")
+@app.route("/camsepeti/sepet")
+def sepet():
+    if "user_id" not in session:
+        return redirect("/camsepeti")
+    return render_template("sepet.html",sepet=session.get("sepet"))
+@app.route("/camsepeti/buy")
+def buy():
+    if "user_id" not in session:
+        return redirect("camsepeti")
+    return render_template("buy.html")
+@app.route("/camsepeti/register",methods=["GET","POST"])
+def register():
+    if request.method=="POST":
+        try:
+            name=request.form["name"]
+            password=request.form["password"]
+
+            hashed_pw=generate_password_hash(password)
+            new_user=Account(name=name,password=hashed_pw)
+            db.session.add(new_user)
+            db.session.commit()
+        except:
+            return "Bu kullanıcı adı zaten var"
+        return redirect("/camsepeti")
+    return render_template("register.html")
+@app.route("/camsepeti",methods=["GET","POST"])
+def login():
+    if request.method=="POST":
+        name=request.form["name"]
+        password=request.form["password"]
+        user=Account.query.filter_by(name=name).first()
+        if user and check_password_hash(user.password,password):
+            session["user_id"]=user.id
+            return redirect("/camsepeti/home")
+        else:
+            return "Hatalı giriş❌"
+    return render_template("login.html")
+@app.route("/camsepeti/logout")
+def logout():
+    session.clear()
+    return redirect("/camsepeti")
 @app.route("/infinitecloud/upload", methods=["GET", "POST"])
 def upload():
     msg = ""
