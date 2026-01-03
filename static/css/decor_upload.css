@@ -1,17 +1,37 @@
 body {
-    background: #0f172a;
+    margin: 0;
+    padding: 0;
     font-family: Arial, sans-serif;
     color: white;
+    background: #0f172a;
+
+    display: flex;
+    flex-direction: column;  /* dikey sıralama */
+    min-height: 100vh;       /* ekran yüksekliği kadar */
+    overflow: hidden;
+}
+
+main {
+    flex: 1;                 /* kalan alanı kapla */
+    display: flex;
+    justify-content: center;  /* yatay ortala */
+    align-items: center;      /* dikey ortala */
 }
 
 .upload-box {
-    width: 320px;
-    margin: 100px auto;
-    padding: 25px;
+    width: 360px;
+    max-width: 90%;
+    padding: 30px;
     background: #020617;
     border-radius: 12px;
     box-shadow: 0 0 30px rgba(0,0,0,0.6);
     text-align: center;
+}
+
+.upload-box img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 20px;
 }
 
 .upload-box input,
@@ -33,18 +53,13 @@ body {
     margin-top: 15px;
     font-weight: bold;
 }
-.site-footer{
-  margin-top: 80px;
-  padding: 20px;
-  text-align: center;
-  background: rgba(0, 0, 0, 0.6);
-  color: #f5deb3;
-  font-size: 16px;
-  font-family: Arial, Helvetica, sans-serif;
-  position: relative;
-  z-index: 2;
-}
 
-.site-footer p{
-  margin: 0;
+.site-footer {
+    width: 100%;             /* tam genişlik */
+    text-align: center;      /* yazıyı ortala */
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #f5deb3;
+    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
 }

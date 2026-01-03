@@ -17,6 +17,12 @@ if DATABASE_URL:
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local.db"
 
+    app.config["SQLALCHEMY_BINDS"] = {
+        "accounts": "sqlite:///accounts.db",
+        "cards": "sqlite:///cards.db",
+        "medias": "sqlite:///medias.db"
+    }
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app )
 app.secret_key=os.urandom(32)
@@ -26,12 +32,16 @@ app.config["UPLOAD_FOLDER"]="uploads"
 ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
 class Account(db.Model):
+    __bind_key__="accounts"
+    __tablename__="accounts_table"
     name=db.Column(db.String(20),nullable=False,unique=True)
     password=db.Column(db.String(100),nullable=False)
     id=db.Column(db.Integer,primary_key=True)
     def __repr__(self):
         return f"<Account {self.id}"
 class Card(db.Model):
+    __bind_key__="cards"
+    __tablename__="card_table"
     title=db.Column(db.String(100),nullable=False)
     subtitle=db.Column(db.String(100),nullable=False)
     text=db.Column(db.String(600),nullable=False)
@@ -39,6 +49,8 @@ class Card(db.Model):
     def __repr__(self):
         return f"<Card {self.id}>"
 class Media(db.Model):
+    __bind_key__="medias"
+    __tablename__="medias_table"
     id=db.Column(db.Integer,primary_key=True)
     original_name=db.Column(db.String(200))
     stored_name=db.Column(db.String(200))
@@ -60,9 +72,16 @@ def cloud():
 def reset_db():
     if not session.get("can_delete"):
         return redirect("/infinitecloud/reset-login")
-    db.drop_all()
-    db.create_all()
+    
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        db.create_all(bind="accounts")
+        db.create_all(bind="cards")
+        db.create_all(bind="medias")
+    
     return "DB sıfırlandı ✅"
+
 @app.route("/camsepeti/home")
 def home_shop():
     if "user_id" not in session:

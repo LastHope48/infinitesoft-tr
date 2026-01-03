@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <title>Admin Reset</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=3">
-
+    <link rel="stylesheet" href="../static/css/decor_reset-login.css">
 </head>
 <body>
-    <main>
-    <h2>🔐 Admin olarak giriş yap</h2>
+    <main class="reset-main">
+        <h2 class="reset-title">🔐 Admin olarak giriş yap</h2>
     </main>
 
-    <form method="post">
+    <form class="reset-form" method="post">
         <input type="password" name="password" placeholder="Admin şifresi" required>
         <button type="submit">Giriş</button>
     </form>
 
     {% if msg %}
-        <p>{{ msg }}</p>
+        <p class="reset-msg">{{ msg }}</p>
     {% endif %}
 </body>
 </html>
