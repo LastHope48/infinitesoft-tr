@@ -1,5 +1,5 @@
 import os,uuid
-from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file,redirect,session
+from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file,redirect,session,url_for,Response
 from werkzeug.security import check_password_hash,generate_password_hash
 from sqlalchemy import func
 import io,zipfile
@@ -306,5 +306,17 @@ def download_all():
         download_name="all_files.zip",
         mimetype="application/zip"
     )
+# Sistemler
+@app.route('/sitemap.xml', methods=['GET'])
+def sitemap():
+    sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.infinitesoft-tr.com/</loc>
+  </url>
+</urlset>
+"""
+    return Response(sitemap_xml, mimetype='application/xml')
+
 if __name__=="__main__":
     app.run()
