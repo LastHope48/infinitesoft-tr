@@ -24,6 +24,20 @@
 .btn_red:hover {
     background: #6b0000;
 }
+.btn_blue {
+  display: inline-block;
+  padding: 24px 48px;
+  background: #06a3eb;
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+}
+.btn_blue:hover {
+    background: rgb(6, 65, 228);
+}
 .btn_yellow {
   display: inline-block;
   padding: 24px 48px;
