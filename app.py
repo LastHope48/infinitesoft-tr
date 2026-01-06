@@ -1,5 +1,6 @@
 import os,uuid
 from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file,redirect,session,url_for,Response
+import requests
 from werkzeug.security import check_password_hash,generate_password_hash
 from sqlalchemy import func
 import io,zipfile
@@ -9,7 +10,9 @@ from werkzeug.utils import secure_filename
 app=Flask(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-
+PYANYWHERE_UPLOAD_URL = os.getenv("PYANYWHERE_UPLOAD_URL")
+PYANYWHERE_SECRET = os.getenv("PYANYWHERE_SECRET")
+PYANYWHERE_LIST_URL = os.getenv("PYANYWHERE_LIST_URL")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
@@ -59,6 +62,20 @@ class Media(db.Model):
     download_count=db.Column(db.Integer,default=0)
     is_private = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
     owner_session = db.Column(db.String(100))         
+
+def send_to_pythonanywhere(file_storage):
+    if not PYANYWHERE_UPLOAD_URL or not PYANYWHERE_SECRET:
+        return
+
+    try:
+        requests.post(
+            PYANYWHERE_UPLOAD_URL,
+            files={"file": (file_storage.filename, file_storage.stream)},
+            headers={"X-SECRET": PYANYWHERE_SECRET},
+            timeout=10
+        )
+    except Exception as e:
+        print("PythonAnywhere upload failed:", e)
 
 def allowed(filename):
     return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED
@@ -195,7 +212,8 @@ def upload():
 
         db.session.add(media)
         db.session.commit()
-
+        file.stream.seek(0)
+        send_to_pythonanywhere(file)  # 👈 EKLENDİ
         msg = "✅ Dosya yüklendi"
 
     return render_template("upload.html", msg=msg)
@@ -279,13 +297,27 @@ def files():
 
     files_count = len(medias)
 
+    pa_files = []
+    if is_admin:
+        try:
+            r = requests.get(
+                os.getenv("PYANYWHERE_LIST_URL"),
+                headers={"X-SECRET": os.getenv("PYANYWHERE_SECRET")},
+                timeout=5
+            )
+            pa_files = r.json().get("files", [])
+        except:
+            pass
+
     return render_template(
         "files.html",
         files=medias,
         files_count=files_count,
         can_reset=session.get("can_reset", False),
-        can_delete=is_admin
+        can_delete=is_admin,
+        pa_files=pa_files
     )
+
 
 @app.route("/infinitecloud/files/download_all")
 def download_all():

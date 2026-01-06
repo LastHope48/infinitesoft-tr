@@ -30,7 +30,7 @@
         {% for media in files %}
         <li>
             <span>⬇️ {{ media.download_count }} indirme</span>
-            {% if is_private %}
+            {% if media.is_private %}
             <span>🔒 {{ media.original_name }}</span>
             {% else %}
             <span>{{media.original_name}}</span>
@@ -50,22 +50,40 @@
         📁 {{ files_count }} dosya
     </div>
 
-    <br>
-<div class="action-bar">
+<h2>🗄️ PythonAnywhere Arşivi</h2>
 
+<ul class="file-list">
+{% for f in pa_files %}
+<li>
+    <span>📦 PythonAnywhere</span>
+    <span>{{ f }}</span>
+
+    <a href="/pa/download/{{ f }}">İndir</a>
+    <a href="/pa/delete/{{ f }}" onclick="return confirm('Silinsin mi?')">Sil</a>
+</li>
+{% else %}
+<li>PythonAnywhere’de dosya yok.</li>
+{% endfor %}
+
+</ul>
+
+<br>
+<pre>{{ pa_files }}</pre>
+
+<div class="action-bar">
     <a href="{{ url_for('download_all') }}" class="download-btn">
-        ⬇️ Tüm Dosyaları İndir
+        ⬇️ InfiniteCloud Tümünü İndir
     </a>
 
     {% if can_reset %}
     <form action="{{ url_for('reset_files') }}" method="post"
           onsubmit="return confirm('EMİN MİSİN? TÜM DOSYALAR SİLİNECEK!')">
         <button type="submit" class="danger-btn">
-            🚨 Tüm Dosyaları Sil
+            🚨 InfiniteCloud Tümünü Sil
         </button>
     </form>
     {% endif %}
-
+</div>
 </div>
 <!-- <footer class="site-footer">
     <p>Dosya yüklerken iki kere düşün ibiş çünkü yüklenen dosyaları bir tek adminler silebilir!</p>
