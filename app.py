@@ -31,6 +31,7 @@ db=SQLAlchemy(app )
 app.secret_key=os.urandom(32)
 UPLOAD_PASSWORD=generate_password_hash("ff'gho113")
 ADMIN_PASSWORD_HASH = generate_password_hash("koalfret4938(poxz'')")
+UPLOAD_FOLDER = "/home/wf5528/infinitecloud_api/uploads"
 app.config["UPLOAD_FOLDER"]="uploads"
 ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
@@ -63,17 +64,19 @@ class Media(db.Model):
     is_private = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
     owner_session = db.Column(db.String(100))         
 
-def send_to_pythonanywhere(file_storage):
+def send_to_pythonanywhere(filename, file_bytes):
     if not PYANYWHERE_UPLOAD_URL or not PYANYWHERE_SECRET:
+        print("PA ENV eksik")
         return
 
     try:
-        requests.post(
+        r = requests.post(
             PYANYWHERE_UPLOAD_URL,
-            files={"file": (file_storage.filename, file_storage.stream)},
+            files={"file": (filename, file_bytes)},
             headers={"X-SECRET": PYANYWHERE_SECRET},
             timeout=10
         )
+        print("PA upload:", r.status_code, r.text)
     except Exception as e:
         print("PythonAnywhere upload failed:", e)
 
@@ -202,18 +205,20 @@ def upload():
         if "uploader_id" not in session:
             session["uploader_id"] = str(uuid.uuid4())
 
+        file_bytes = file.read()
+
         media = Media(
             original_name=original_name,
             stored_name=stored_name,
-            data=file.read(),
+            data=file_bytes,
             is_private=is_private,
             owner_session=session["uploader_id"]
         )
 
         db.session.add(media)
         db.session.commit()
-        file.stream.seek(0)
-        send_to_pythonanywhere(file)  # 👈 EKLENDİ
+
+        send_to_pythonanywhere(original_name, file_bytes)
         msg = "✅ Dosya yüklendi"
 
     return render_template("upload.html", msg=msg)
