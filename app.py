@@ -12,7 +12,7 @@ app=Flask(__name__)
 DATABASE_URL = os.getenv("DATABASE_URL")
 PYANYWHERE_UPLOAD_URL = "https://wf5528.pythonanywhere.com/upload"
 PYANYWHERE_LIST_URL   = "https://wf5528.pythonanywhere.com/list"
-PYANYWHERE_SECRET     = "kkouertfjhs224fdaokdjggoooooo"
+PYANYWHERE_SECRET     = "aa"
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
@@ -65,20 +65,18 @@ class Media(db.Model):
     owner_session = db.Column(db.String(100))         
 
 def send_to_pythonanywhere(filename, file_bytes):
-    if not PYANYWHERE_UPLOAD_URL or not PYANYWHERE_SECRET:
-        print("PA ENV eksik")
-        return
-
     try:
-        r = requests.get(
-            os.getenv("PYANYWHERE_LIST_URL"),
-            headers={"X-SECRET": os.getenv("PYANYWHERE_SECRET")},
-            timeout=5
+        r = requests.post(
+            PYANYWHERE_UPLOAD_URL,
+            files={"file": (filename, file_bytes)},
+            headers={"X-SECRET": PYANYWHERE_SECRET},
+            timeout=10
         )
-
-        print("PA upload:", r.status_code, r.text)
+        print("STATUS:", r.status_code)
+        print("TEXT:", r.text)
     except Exception as e:
-        print("PythonAnywhere upload failed:", e)
+        print("ERR:", e)
+
 
 def allowed(filename):
     return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED
