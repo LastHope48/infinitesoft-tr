@@ -10,9 +10,9 @@ from werkzeug.utils import secure_filename
 app=Flask(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-PYANYWHERE_UPLOAD_URL = os.getenv("PYANYWHERE_UPLOAD_URL")
-PYANYWHERE_SECRET = os.getenv("PYANYWHERE_SECRET")
-PYANYWHERE_LIST_URL = os.getenv("PYANYWHERE_LIST_URL")
+PYANYWHERE_UPLOAD_URL = "https://wf5528.pythonanywhere.com/upload"
+PYANYWHERE_LIST_URL   = "https://wf5528.pythonanywhere.com/list"
+PYANYWHERE_SECRET     = "kkouertfjhs224fdaokdjggoooooo"
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
@@ -70,12 +70,12 @@ def send_to_pythonanywhere(filename, file_bytes):
         return
 
     try:
-        r = requests.post(
-            PYANYWHERE_UPLOAD_URL,
-            files={"file": (filename, file_bytes)},
-            headers={"X-SECRET": PYANYWHERE_SECRET},
-            timeout=10
+        r = requests.get(
+            os.getenv("PYANYWHERE_LIST_URL"),
+            headers={"X-SECRET": os.getenv("PYANYWHERE_SECRET")},
+            timeout=5
         )
+
         print("PA upload:", r.status_code, r.text)
     except Exception as e:
         print("PythonAnywhere upload failed:", e)
