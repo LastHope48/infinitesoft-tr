@@ -351,7 +351,7 @@ def sitemap():
 </urlset>
 """
     return Response(sitemap_xml, mimetype='application/xml')
-@app.route("/infinitecloud/pa/download/<filename>")
+@app.route("/infinitecloud/files/pa/download/<filename>")
 def pa_download(filename):
     r = requests.get(
         f"https://wf5528.pythonanywhere.com/download/{filename}",
