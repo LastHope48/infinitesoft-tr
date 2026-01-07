@@ -301,16 +301,15 @@ def files():
     files_count = len(medias)
 
     pa_files = []
-    if is_admin:
-        try:
-            r = requests.get(
-                os.getenv("PYANYWHERE_LIST_URL"),
-                headers={"X-SECRET": os.getenv("PYANYWHERE_SECRET")},
-                timeout=5
-            )
-            pa_files = r.json().get("files", [])
-        except:
-            pass
+    try:
+        r = requests.get(
+            os.getenv("PYANYWHERE_LIST_URL"),
+            headers={"X-SECRET": os.getenv("PYANYWHERE_SECRET")},
+            timeout=5
+        )
+        pa_files = r.json().get("files", [])
+    except:
+         pass
 
     return render_template(
         "files.html",
@@ -352,6 +351,34 @@ def sitemap():
 </urlset>
 """
     return Response(sitemap_xml, mimetype='application/xml')
+@app.route("/infinitecloud/pa/download/<filename>")
+def pa_download(filename):
+    r = requests.get(
+        f"https://wf5528.pythonanywhere.com/download/{filename}",
+        headers={"X-SECRET": PYANYWHERE_SECRET},
+        stream=True
+    )
+
+    if r.status_code != 200:
+        return "PA download failed", 404
+
+    return Response(
+        r.content,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+@app.route("/infinitecloud/pa/delete/<filename>", methods=["POST"])
+def pa_delete(filename):
+    r = requests.post(
+        f"https://wf5528.pythonanywhere.com/delete/{filename}",
+        headers={"X-SECRET": PYANYWHERE_SECRET},
+        timeout=5
+    )
+
+    if r.status_code == 200:
+        return redirect("/infinitecloud/files")
+    return "Silinemedi", 400
 
 if __name__=="__main__":
     app.run()
