@@ -379,6 +379,8 @@ def pa_delete(filename):
     if r.status_code == 200:
         return redirect("/infinitecloud/files")
     return "Silinemedi", 400
-
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"),404
 if __name__=="__main__":
     app.run()
