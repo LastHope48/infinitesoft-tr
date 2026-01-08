@@ -1,11 +1,11 @@
 import os,uuid
-from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file,redirect,session,url_for,Response
+from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file,redirect,session,url_for,Response,abort
 import requests
 from werkzeug.security import check_password_hash,generate_password_hash
 from sqlalchemy import func
 import io,zipfile
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 app=Flask(__name__)
 
@@ -23,8 +23,13 @@ else:
     app.config["SQLALCHEMY_BINDS"] = {
         "accounts": "sqlite:///accounts.db",
         "cards": "sqlite:///cards.db",
-        "medias": "sqlite:///medias.db"
+        "medias": "sqlite:///medias.db",
+        "sitemessage": "sqlite:///sitemessage.db"
     }
+broadcast = {
+    "message": None,
+    "expires": None
+}
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app )
@@ -63,6 +68,13 @@ class Media(db.Model):
     download_count=db.Column(db.Integer,default=0)
     is_private = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
     owner_session = db.Column(db.String(100))         
+
+class SiteMessage(db.Model):
+    __bind_key__="sitemessage"
+    __tablename__="sitemessage_table"
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(300), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
 
 def send_to_pythonanywhere(filename, file_bytes):
     try:
@@ -241,11 +253,9 @@ def download_file(media_id):
 @app.route("/infinitecloud/files/<int:media_id>")
 def look(media_id):
     media = Media.query.get_or_404(media_id)
-
     if media.is_private:
         if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
-            return "❌ Bu dosya gizli", 403
-
+            abort(403)
     return send_file(
         io.BytesIO(media.data),
         as_attachment=False,
@@ -287,16 +297,23 @@ def reset_files():
 
 @app.route("/infinitecloud/files")
 def files():
+    if "uploader_id" not in session:
+        session["uploader_id"] = str(uuid.uuid4())
     uploader_id = session.get("uploader_id")
     is_admin = session.get("can_delete", False)
 
-    if is_admin:
+    if not uploader_id and not is_admin:
+        medias = Media.query.filter(Media.is_private == False).all()
+    elif is_admin:
         medias = Media.query.all()
     else:
         medias = Media.query.filter(
             (Media.is_private == False) |
             (Media.owner_session == uploader_id)
         ).all()
+    print("SESSION uploader_id:", uploader_id)
+    print("DB owner_session:", [m.owner_session for m in Media.query.all()])
+
 
     files_count = len(medias)
 
@@ -379,8 +396,39 @@ def pa_delete(filename):
     if r.status_code == 200:
         return redirect("/infinitecloud/files")
     return "Silinemedi", 400
+@app.route("/admin/broadcast", methods=["POST"])
+def admin_broadcast():
+    if not session.get("can_delete"):
+        return "Yetkisiz", 403
+
+    msg = request.form["message"]
+    minutes = int(request.form.get("minutes", 5))
+
+    broadcast["message"] = msg
+    broadcast["expires"] = datetime.utcnow() + timedelta(minutes=minutes)
+    if not session.get("can_delete"):
+        abort(403)
+    return render_template("admin_broadcast.html")
+@app.context_processor
+def inject_broadcast():
+    if broadcast["message"] and broadcast["expires"]:
+        if datetime.utcnow() < broadcast["expires"]:
+            return {"broadcast_message": broadcast["message"]}
+        else:
+            broadcast["message"] = None
+            broadcast["expires"] = None
+    return {}
+@app.route("/admin/broadcast-panel")
+def broadcast_panel():
+    if not session.get("can_delete"):
+        return "Yetkisiz", 403
+    return render_template("admin_broadcast.html")
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"),404
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template("403.html"),403
 if __name__=="__main__":
     app.run()

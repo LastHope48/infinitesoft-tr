@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Infinitesoft{% endblock %}</title>
+
+    <!-- GLOBAL CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <!-- SAYFA ÖZEL CSS -->
+    {% block css %}
+    <link rel="stylesheet" href="{{url_for('static',filename='css/decor_projects.css')}}">
+    {% endblock %}
+</head>
+<body>
+
+{% block content %}{% endblock %}
+{% if broadcast_message %}
+<script>
+    alert("{{ broadcast_message }}");
+</script>
+{% endif %}
+{% if session.can_delete %}
+<a href="/admin/broadcast-panel" class="admin-btn">⚙</a>
+{% endif %}
+
+</body>
+</html>

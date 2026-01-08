@@ -1,35 +1,41 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <title>Infinitesoft-tr</title>
-    <meta charset="UTF-8">
-    <meta name="description" content="Infinitesoft-tr - projeler, araçlar ve deneyler">
-    <link rel="stylesheet" href="../static/css/decor_projects.css">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=3">
-    <link rel="canonical" href="https://www.infinitesoft-tr.com/" />
-</head>
-<body>
-    <main>
+{% extends "base.html" %}
+
+{% block title %}Dosyalar{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/decor_projects.css') }}">
+{% endblock %}
+
+{% block content %}
+<main>
     <header class="header">
-        <h3 class="header__item">Infinitesoft-tr.com'un ürettiği projelere bakın!</h3>
+        <h3 class="header__item">
+            Infinitesoft-tr.com'un ürettiği projelere bakın!
+        </h3>
     </header>
-    </main>
+
     <ul class="list">
         <li class="list__item">
             <a href="/infinitecloud">
-                <img class="item__img" src="../static/img/upload-icon-4.png" alt="bulut">
+                <img class="item__img"
+                     src="{{ url_for('static', filename='img/upload-icon-4.png') }}"
+                     alt="bulut">
                 <span>infinitecloud</span>
             </a>
         </li>
+
         <li class="list__item">
             <a href="/camsepeti">
-                <img src="../static/img/camsepeti.png" alt="camsepeti" class="item__img">
+                <img class="item__img"
+                     src="{{ url_for('static', filename='img/camsepeti.png') }}"
+                     alt="camsepeti">
                 <span>Çamsepeti</span>
             </a>
         </li>
     </ul>
+</main>
+
 <footer class="site-footer">
-    <p>Versiyon: 2.6.0</p>
+    <p>Versiyon: 2.7.0</p>
 </footer>
-</body>
-</html>
+{% endblock %}
