@@ -38,7 +38,7 @@ UPLOAD_PASSWORD=generate_password_hash("ff'gho113")
 ADMIN_PASSWORD_HASH = generate_password_hash("koalfret4938(poxz'')")
 UPLOAD_FOLDER = "/home/wf5528/infinitecloud_api/uploads"
 app.config["UPLOAD_FOLDER"]="uploads"
-ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3","pptx"}
+ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3","pptx","zip"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
 class Account(db.Model):
     __bind_key__="accounts"
