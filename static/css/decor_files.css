@@ -5,12 +5,21 @@
     color: #9fffe0;
     opacity: 0.85;
 }
+body::-webkit-scrollbar {
+  width: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
     background: black;
     color: aquamarine;
     font-family: Arial, Helvetica, sans-serif;
+    overflow-y: scroll;
+    scrollbar-width: none;
 }
-
 .files-page {
     text-align: center;
     padding: 40px;
@@ -27,8 +36,16 @@ body {
     padding: 0;
     max-width: 600px;
     margin: 0 auto 30px;
-}
+    max-height: 70vh;
+    overflow-y: auto;
 
+    scrollbar-width: none;
+    overflow: visible; /* 🔥 KRİTİK */
+
+}
+.file-list::-webkit-scrollbar {
+    display: none;
+}
 .file-list li {
     display: flex;
     justify-content: space-between;
@@ -37,6 +54,7 @@ body {
     margin-bottom: 10px;
     border-radius: 12px;
     border: 1px solid #2affc6;
+    overflow: visible;
 }
 
 .file-list a {
@@ -168,3 +186,71 @@ body {
 .btn:hover{
   background: #246b45;
 }
+.file-list li.file-item {
+    list-style: none;
+    background: #0f0f0f;
+    border: 1px solid #222;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+/* Admin */
+.file-list li.file-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+.file-list li.admin-featured {
+    border: 2px solid #8b5cf6;
+    border-radius: 0; /* keskin köşe */
+
+    background: linear-gradient(
+        135deg,
+        rgba(139,92,246,0.18),
+        rgba(0,0,0,0.9)
+    );
+
+    box-shadow:
+        0 0 0 1px rgba(139,92,246,0.4),
+        0 0 20px rgba(139,92,246,0.4);
+}
+
+.file-list li.admin-featured:hover {
+    box-shadow:
+        0 0 0 2px rgba(139,92,246,0.8),
+        0 0 40px rgba(139,92,246,0.9);
+}
+
+.admin-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+
+    background: #8b5cf6;
+    color: #000;
+    font-size: 11px;
+    font-weight: bold;
+
+    padding: 4px 8px;
+    letter-spacing: 1px;
+    border-radius: 4px;
+
+    box-shadow: 0 0 12px rgba(139,92,246,0.8);
+}
+/* admin değil */
+.file-list-wrapper {
+    max-height: 70vh;
+    overflow-y: auto;
+
+    scrollbar-width: none;
+}
+.file-list-wrapper::-webkit-scrollbar {
+    display: none;
+}
+

@@ -67,6 +67,7 @@ class Media(db.Model):
     created_at=db.Column(db.DateTime,default=datetime.utcnow)
     download_count=db.Column(db.Integer,default=0)
     is_private = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
+    high_lighted=db.Column(db.Boolean,default=False)
     owner_session = db.Column(db.String(100))         
 
 class SiteMessage(db.Model):
@@ -194,7 +195,7 @@ def logout():
 @app.route("/infinitecloud/upload", methods=["GET", "POST"])
 def upload():
     msg = ""
-
+    can_delete=session.get("can_delete")
     if request.method == "POST":
         if not check_password_hash(UPLOAD_PASSWORD, request.form["password"]):
             return render_template("upload.html", msg="❌ Şifre yanlış")
@@ -210,7 +211,7 @@ def upload():
         stored_name = f"{uuid.uuid4()}.{ext}" if exists else original_name
 
         is_private = "is_private" in request.form
-
+        high_lighted=request.form.get("high_lighted")
         # uploader session
         if "uploader_id" not in session:
             session["uploader_id"] = str(uuid.uuid4())
@@ -222,6 +223,7 @@ def upload():
             stored_name=stored_name,
             data=file_bytes,
             is_private=is_private,
+            high_lighted=bool(high_lighted),
             owner_session=session["uploader_id"]
         )
 
@@ -231,7 +233,7 @@ def upload():
         send_to_pythonanywhere(original_name, file_bytes)
         msg = "✅ Dosya yüklendi"
 
-    return render_template("upload.html", msg=msg)
+    return render_template("upload.html", msg=msg,can_delete=can_delete)
 
 @app.route("/infinitecloud/files/<int:media_id>/download")
 def download_file(media_id):

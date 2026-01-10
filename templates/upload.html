@@ -33,6 +33,12 @@
             <input type="checkbox" name="is_private">
             🔒 Gizli olsun
         </label>
+        {% if can_delete %}
+        <label>
+            <input type="checkbox" name="high_lighted">
+            ⭐ Admin özel çerçeve
+        </label>
+        {% endif %}
         <button type="submit">Yükle</button>
     </form>
 
