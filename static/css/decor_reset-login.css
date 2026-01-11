@@ -59,18 +59,33 @@ body {
     padding: 12px;
     border-radius: 10px;
     border: none;
-    background: #2563eb;
     color: #fff;
     font-size: 16px;
     cursor: pointer;
     transition: 0.3s ease;
 }
-
-.reset-form button:hover {
+.reset-form-button-blue {
+    background: #2563eb;
+}
+.reset-form-button-red {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #ee0000;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.reset-form-button-blue:hover {
     background: #1e40af;
     transform: translateY(-2px);
 }
-
+.reset-form-button-red:hover {
+    background: #a00202;
+    transform: translateY(-2px);
+}
 /* Mesaj */
 .reset-msg {
     margin-top: 15px;

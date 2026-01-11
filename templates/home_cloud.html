@@ -24,11 +24,17 @@
         <!-- DOSYALAR -->
         <li class="list__item">
             <a href="{{ url_for('files') }}">
-                <img class="item__img" src="../static/img/files.webp" alt="dosyalar">
-                <span>Dosyalar</span>
+                <img class="item__img" src="../static/img/global.png" alt="dosyalar">
+                <span>Global Dosyalar</span>
             </a>
         </li>
-
+        <!-- Benim Dosyalarım -->
+        <li class="list__item">
+            <a href="{{ url_for('myfiles') }}">
+                <img class="item__img" src="../static/img/files.webp" alt="dosyalar">
+                <span>Benim Dosyalarım</span>
+            </a>
+        </li>
         <!-- ADMIN -->
         <li class="list__item admin-item">
             <a href="{{ url_for('reset_login') }}">

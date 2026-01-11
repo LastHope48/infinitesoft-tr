@@ -13,9 +13,9 @@
 
     <form class="reset-form" method="post">
         <input type="password" name="password" placeholder="Admin şifresi" required>
-        <button type="submit">Giriş</button>
+        <button type="submit" class="reset-form-button-blue">Giriş</button>
+        <button onclick="window.location.href='/'" class="reset-form-button-red">Geri Dön</button>
     </form>
-
     {% if msg %}
         <p class="reset-msg">{{ msg }}</p>
     {% endif %}

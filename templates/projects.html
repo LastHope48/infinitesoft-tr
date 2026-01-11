@@ -34,8 +34,10 @@
         </li>
     </ul>
 </main>
-
+{% if not can_delete %}
+<a href="/admin" class="admin-btn">🔑</a>
+{% endif %}
 <footer class="site-footer">
-    <p>Versiyon: 2.8.0</p>
+    <p>Versiyon: 3.0.0</p>
 </footer>
 {% endblock %}

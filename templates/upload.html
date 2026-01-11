@@ -14,7 +14,7 @@
     <a href="/infinitecloud/files" class="btn_yellow">
         <i class="fa-solid fa-file"></i> Dosyalar
     </a>
-    <a href="/infinitecloud/reset-login" class="btn_red">
+    <a href="/admin" class="btn_red">
         <i class="fa-solid fa-user"></i> Admin Giriş
     </a>
     <a href="/" class="btn_blue">
@@ -30,8 +30,8 @@
         <input type="password" name="password" placeholder="Şifre" required>
         <input type="file" name="file" required>
         <label>
-            <input type="checkbox" name="is_private">
-            🔒 Gizli olsun
+            <input type="checkbox" name="is_global">
+            🌍 Küresel olsun
         </label>
         {% if can_delete %}
         <label>

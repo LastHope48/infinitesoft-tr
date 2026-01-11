@@ -66,7 +66,7 @@ class Media(db.Model):
     data=db.Column(db.LargeBinary)
     created_at=db.Column(db.DateTime,default=datetime.utcnow)
     download_count=db.Column(db.Integer,default=0)
-    is_private = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
+    is_global = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
     high_lighted=db.Column(db.Boolean,default=False)
     owner_session = db.Column(db.String(100))         
 
@@ -210,7 +210,7 @@ def upload():
         exists = Media.query.filter_by(original_name=original_name).first()
         stored_name = f"{uuid.uuid4()}.{ext}" if exists else original_name
 
-        is_private = "is_private" in request.form
+        is_global = "is_global" in request.form
         high_lighted=request.form.get("high_lighted")
         # uploader session
         if "uploader_id" not in session:
@@ -222,7 +222,7 @@ def upload():
             original_name=original_name,
             stored_name=stored_name,
             data=file_bytes,
-            is_private=is_private,
+            is_global=is_global,
             high_lighted=bool(high_lighted),
             owner_session=session["uploader_id"]
         )
@@ -239,7 +239,7 @@ def upload():
 def download_file(media_id):
     media = Media.query.get_or_404(media_id)
 
-    if media.is_private:
+    if not media.is_global:
         if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
             return "❌ Bu dosya gizli", 403
 
@@ -255,7 +255,7 @@ def download_file(media_id):
 @app.route("/infinitecloud/files/<int:media_id>")
 def look(media_id):
     media = Media.query.get_or_404(media_id)
-    if media.is_private:
+    if not media.is_global:
         if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
             abort(403)
     return send_file(
@@ -266,20 +266,26 @@ def look(media_id):
 
 @app.route("/infinitecloud/files/<int:media_id>/delete")
 def delete_file(media_id):
-    if not session.get("can_delete"):
-        return redirect("/infinitecloud/reset-login")
-    media=Media.query.get_or_404(media_id)
+    media = Media.query.get_or_404(media_id)
+
+    is_admin = session.get("can_delete") is True
+    is_owner = media.owner_session == session.get("uploader_id")
+
+    if not (is_admin or is_owner):
+        abort(403)
+
     db.session.delete(media)
     db.session.commit()
     return redirect("/infinitecloud/files")
-@app.route("/infinitecloud/reset-login", methods=["GET", "POST"])
+
+@app.route("/admin", methods=["GET", "POST"])
 def reset_login():
     msg = ""
     if request.method == "POST":
         if check_password_hash(ADMIN_PASSWORD_HASH, request.form["password"]):
             session["can_reset"] = True
             session["can_delete"]=True
-            return redirect("/infinitecloud/files")
+            return redirect("/")
         else:
             msg = "❌ Admin şifre yanlış"
     return render_template("reset_login.html", msg=msg)
@@ -303,16 +309,10 @@ def files():
         session["uploader_id"] = str(uuid.uuid4())
     uploader_id = session.get("uploader_id")
     is_admin = session.get("can_delete", False)
-
-    if not uploader_id and not is_admin:
-        medias = Media.query.filter(Media.is_private == False).all()
+    if not is_admin:
+        medias = Media.query.filter(Media.is_global== True).all()
     elif is_admin:
         medias = Media.query.all()
-    else:
-        medias = Media.query.filter(
-            (Media.is_private == False) |
-            (Media.owner_session == uploader_id)
-        ).all()
     print("SESSION uploader_id:", uploader_id)
     print("DB owner_session:", [m.owner_session for m in Media.query.all()])
 
@@ -336,7 +336,7 @@ def files():
         files_count=files_count,
         can_reset=session.get("can_reset", False),
         can_delete=is_admin,
-        pa_files=pa_files
+        pa_files=pa_files,
     )
 
 
@@ -425,6 +425,53 @@ def broadcast_panel():
     if not session.get("can_delete"):
         return "Yetkisiz", 403
     return render_template("admin_broadcast.html")
+@app.route("/infinitecloud/myfiles")
+def myfiles():
+    uploader_id=session.get("uploader_id")
+    if "uploader_id" not in session:
+        session["uploader_id"] = str(uuid.uuid4())
+    medias=Media.query.filter(
+        (Media.is_global==False) &
+        (Media.owner_session==uploader_id)
+    ).all()
+    return render_template("myfiles.html",files=medias)
+@app.route("/infinitecloud/myfiles/<int:media_id>/delete")
+def delete_myfile(media_id):
+    media=Media.query.get_or_404(media_id)
+    if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
+        abort(403)
+
+    db.session.delete(media)
+    db.session.commit()
+    return redirect("/infinitecloud/myfiles")
+@app.route("/infinitecloud/myfiles/<int:media_id>")
+def lookmy(media_id):
+    media = Media.query.get_or_404(media_id)
+    if not media.is_global:
+        if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
+            abort(403)
+    return send_file(
+        io.BytesIO(media.data),
+        as_attachment=False,
+        download_name=media.original_name
+    )
+@app.route("/infinitecloud/myfiles/<int:media_id>/download")
+def download_myfile(media_id):
+    media = Media.query.get_or_404(media_id)
+
+    if not media.is_global:
+        if session.get("can_delete") is not True and media.owner_session != session.get("uploader_id"):
+            return "❌ Bu dosya gizli", 403
+
+    media.download_count += 1
+    db.session.commit()
+
+    return send_file(
+        io.BytesIO(media.data),
+        as_attachment=True,
+        download_name=media.original_name,
+        files_count=media.download_count
+    )
 
 @app.errorhandler(404)
 def page_not_found(e):

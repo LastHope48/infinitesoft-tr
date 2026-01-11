@@ -21,7 +21,7 @@
     </a>
     </div>
     <main>
-    <h1>Yüklenen Global Dosyalar</h1>
+    <h1>Yüklenen Dosyalar</h1>
     </main>
 
     <img src="../static/img/files.webp" class="cloud-img">
@@ -32,17 +32,10 @@
     file-item
     {% if media.high_lighted %} admin-featured {% endif %}
 ">
-            {% if media.high_lighted %}
-            <span class="admin-badge">ADMIN</span>
-            {% endif %}
-            <span>⬇️ {{ media.download_count }} indirme</span>
             <span>{{media.original_name}}</span>
-            {% if can_delete or media.owner_session == session.uploader_id %}
-                <a href="{{ url_for('delete_file', media_id=media.id) }}">Sil</a>
-            {% endif %}
-
-            <a target="_blank"href="{{url_for ('look',media_id=media.id)}}">Ön izle</a>
-            <a href="{{ url_for('download_file', media_id=media.id) }}">İndir</a>
+            <a href="{{url_for ('delete_myfile',media_id=media.id)}}">Sil</a>
+            <a target="_blank"href="{{url_for ('lookmy',media_id=media.id)}}">Ön izle</a>
+            <a href="{{ url_for('download_myfile', media_id=media.id) }}">İndir</a>
         </li>
         {% else %}
         <li>Hiç dosya yok.</li>
@@ -53,28 +46,8 @@
         📁 {{ files_count }} dosya
     </div>
 
-<h2>🗄️ PythonAnywhere Arşivi</h2>
-<div class="file-list-wrapper">
-<ul class="file-list">
-{% for f in pa_files %}
-<li>
-    <span>📦 PythonAnywhere</span>
-    <span>{{ f }}</span>
-
-    <a href="/infinitecloud/files/pa/download/{{ f }}">İndir</a>
-    {% if can_delete %}
-    <a href="/infinitecloud/files/pa/delete/{{ f }}" onclick="return confirm('Silinsin mi?')">Sil</a>
-    {% endif %}
-</li>
-{% else %}
-<li>PythonAnywhere’de dosya yok.</li>
-{% endfor %}
-
-</ul>
-</div>
 
 <br>
-<pre>{{ pa_files }}</pre>
 
 <div class="action-bar">
     <a href="{{ url_for('download_all') }}" class="download-btn">
@@ -90,9 +63,5 @@
     </form>
     {% endif %}
 </div>
-</div>
-<!-- <footer class="site-footer">
-    <p>Dosya yüklerken iki kere düşün ibiş çünkü yüklenen dosyaları bir tek adminler silebilir!</p>
-</footer> -->
 </body>
 </html>
