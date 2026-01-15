@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>Dosyalar</title>
+    <title>Infinitecloud | Dosyalarım</title>
     <link rel="stylesheet" href="../static/css/decor_files.css">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=3">
 </head>
@@ -63,5 +63,12 @@
     </form>
     {% endif %}
 </div>
+<footer style="text-align:center; color:#888; font-size:14px; padding:20px;">
+  © <span id="year"></span> infinitesoft-tr. Tüm hakları saklıdır.
+</footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
 </body>
 </html>

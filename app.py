@@ -14,10 +14,14 @@ PYANYWHERE_UPLOAD_URL = "https://wf5528.pythonanywhere.com/upload"
 PYANYWHERE_LIST_URL   = "https://wf5528.pythonanywhere.com/list"
 PYANYWHERE_SECRET     = "aa"
 if DATABASE_URL:
+    UPLOAD_PASSWORD=os.getenv("UPLOAD_PASSWORD")
+    ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD")
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 else:
+    UPLOAD_PASSWORD="yukle"
+    ADMIN_PASSWORD_HASH = "admin"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local.db"
 
     app.config["SQLALCHEMY_BINDS"] = {
@@ -34,20 +38,18 @@ broadcast = {
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app )
 app.secret_key=os.urandom(32)
-UPLOAD_PASSWORD=generate_password_hash("ff'gho113")
-ADMIN_PASSWORD_HASH = generate_password_hash("koalfret4938(poxz'')")
 UPLOAD_FOLDER = "/home/wf5528/infinitecloud_api/uploads"
 app.config["UPLOAD_FOLDER"]="uploads"
 ALLOWED={"png","jpg","jpeg","mp4","mov","pdf","webp","mp3","pptx","zip"}
 app.config["MAX_CONTENT_LENGTH"]=50*1024*1024
 class Account(db.Model):
-    __bind_key__="accounts"
-    __tablename__="accounts_table"
-    name=db.Column(db.String(20),nullable=False,unique=True)
-    password=db.Column(db.String(100),nullable=False)
-    id=db.Column(db.Integer,primary_key=True)
-    def __repr__(self):
-        return f"<Account {self.id}"
+    __tablename__ = "accounts_table"
+    __table_args__ = {"schema": "auth"}
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), nullable=False, unique=True)
+    password = db.Column(db.String(100), nullable=False)
+
 class Card(db.Model):
     __bind_key__="cards"
     __tablename__="card_table"
@@ -58,24 +60,37 @@ class Card(db.Model):
     def __repr__(self):
         return f"<Card {self.id}>"
 class Media(db.Model):
-    __bind_key__="medias"
-    __tablename__="medias_table"
-    id=db.Column(db.Integer,primary_key=True)
-    original_name=db.Column(db.String(200))
-    stored_name=db.Column(db.String(200))
-    data=db.Column(db.LargeBinary)
-    created_at=db.Column(db.DateTime,default=datetime.utcnow)
-    download_count=db.Column(db.Integer,default=0)
-    is_global = db.Column(db.Boolean, default=False)  # 🔒 gizli mi
-    high_lighted=db.Column(db.Boolean,default=False)
-    owner_session = db.Column(db.String(100))         
+    __tablename__ = "medias_table"
+    __table_args__ = {"schema": "storage"}
+
+    id = db.Column(db.Integer, primary_key=True)
+    original_name = db.Column(db.String(200))
+    stored_name = db.Column(db.String(200))
+    data = db.Column(db.LargeBinary)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    download_count = db.Column(db.Integer, default=0)
+    is_global = db.Column(db.Boolean, default=False)
+    high_lighted = db.Column(db.Boolean, default=False)
+    owner_session = db.Column(db.String(100))
 
 class SiteMessage(db.Model):
-    __bind_key__="sitemessage"
-    __tablename__="sitemessage_table"
+    __tablename__ = "sitemessage_table"
+    __table_args__ = {"schema": "system"}
+
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(300), nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class SiteUpdate(db.Model):
+    __tablename__ = "site_updates"
+    __table_args__ = {"schema": "system"}
+
+    id = db.Column(db.Integer, primary_key=True)
+    version = db.Column(db.String(20), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 def send_to_pythonanywhere(filename, file_bytes):
     try:
@@ -102,14 +117,14 @@ def cloud():
 @app.route("/__reset_db__")
 def reset_db():
     if not session.get("can_delete"):
-        return redirect("/infinitecloud/reset-login")
+        abort(403)
     
     with app.app_context():
         db.drop_all()
         db.create_all()
-        db.create_all(bind="accounts")
-        db.create_all(bind="cards")
-        db.create_all(bind="medias")
+        db.create_all(bind_key="accounts")
+        db.create_all(bind_key="cards")
+        db.create_all(bind_key="medias")
     
     return "DB sıfırlandı ✅"
 
@@ -197,7 +212,7 @@ def upload():
     msg = ""
     can_delete=session.get("can_delete")
     if request.method == "POST":
-        if not check_password_hash(UPLOAD_PASSWORD, request.form["password"]):
+        if UPLOAD_PASSWORD!=request.form["password"]:
             return render_template("upload.html", msg="❌ Şifre yanlış")
 
         file = request.files.get("file")
@@ -282,7 +297,7 @@ def delete_file(media_id):
 def reset_login():
     msg = ""
     if request.method == "POST":
-        if check_password_hash(ADMIN_PASSWORD_HASH, request.form["password"]):
+        if ADMIN_PASSWORD_HASH==request.form["password"]:
             session["can_reset"] = True
             session["can_delete"]=True
             return redirect("/")
@@ -401,25 +416,51 @@ def pa_delete(filename):
 @app.route("/admin/broadcast", methods=["POST"])
 def admin_broadcast():
     if not session.get("can_delete"):
-        return "Yetkisiz", 403
+        abort(403)
 
     msg = request.form["message"]
     minutes = int(request.form.get("minutes", 5))
 
-    broadcast["message"] = msg
-    broadcast["expires"] = datetime.utcnow() + timedelta(minutes=minutes)
+    expires = datetime.utcnow() + timedelta(minutes=minutes)
+
+    site_msg = SiteMessage(
+        message=msg,
+        expires_at=expires
+    )
+
+    db.session.add(site_msg)
+    db.session.commit()
+
+    return redirect("/admin/broadcast-panel")
+@app.route("/admins")
+def admin_panel():
     if not session.get("can_delete"):
         abort(403)
-    return render_template("admin_broadcast.html")
+    return render_template("admins.html")
 @app.context_processor
 def inject_broadcast():
-    if broadcast["message"] and broadcast["expires"]:
-        if datetime.utcnow() < broadcast["expires"]:
-            return {"broadcast_message": broadcast["message"]}
-        else:
-            broadcast["message"] = None
-            broadcast["expires"] = None
-    return {}
+    now = datetime.utcnow()
+
+    # Süresi dolanları temizle
+    expired = SiteMessage.query.filter(
+        SiteMessage.expires_at < now
+    ).all()
+
+    for msg in expired:
+        db.session.delete(msg)
+
+    if expired:
+        db.session.commit()
+
+    # Aktif mesaj (en son girilen)
+    active = SiteMessage.query.filter(
+        SiteMessage.expires_at > now
+    ).order_by(SiteMessage.created_at.desc()).first()
+
+    return {
+        "broadcast_message": active.message if active else None
+    }
+
 @app.route("/admin/broadcast-panel")
 def broadcast_panel():
     if not session.get("can_delete"):
@@ -472,12 +513,55 @@ def download_myfile(media_id):
         download_name=media.original_name,
         files_count=media.download_count
     )
+# PUSH GAME
+@app.route("/pushgame")
+def gamestart():
+    return render_template("pushgame.html")
+@app.route("/pushgame/game", methods=["POST"])
+def game():
+    return render_template("pushgame_game.html")
+# YENİLİKLER
+@app.route("/news")
+def news():
+    updates = SiteUpdate.query.order_by(
+        SiteUpdate.created_at.desc()
+    ).all()
+    return render_template("last_updates.html", updates=updates)
 
+@app.route("/admin/news", methods=["GET", "POST"])
+def admin_news():
+    if not session.get("can_delete"):
+        abort(403)
+
+    if request.method == "POST":
+        version = request.form["version"]
+        content = request.form["content"]
+
+        update = SiteUpdate(
+            version=version,
+            content=content
+        )
+
+        db.session.add(update)
+        db.session.commit()
+
+        return redirect("/news")
+
+    return render_template("make_update.html")
+
+# HATALAR
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"),404
 @app.errorhandler(403)
 def forbidden(e):
     return render_template("403.html"),403
+@app.errorhandler(405)
+def wrong_direction_to_come(e):
+    return render_template("405.html"),405
+@app.errorhandler(500)
+def internal_error(e):
+    return render_template("500.html"), 500
+
 if __name__=="__main__":
     app.run()

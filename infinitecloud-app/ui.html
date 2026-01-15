@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>InfiniteCloud Upload</title>
+<style>
+    body {
+        background: #000;
+        color: #0f0;
+        font-family: monospace;
+        padding: 20px;
+    }
+    input, button {
+        width: 100%;
+        margin-top: 10px;
+        padding: 8px;
+        background: #111;
+        color: #0f0;
+        border: 1px solid #0f0;
+    }
+    .bar {
+        width: 100%;
+        height: 20px;
+        background: #222;
+        margin-top: 15px;
+    }
+    .bar-inner {
+        height: 100%;
+        width: 0%;
+        background: #0f0;
+    }
+</style>
+</head>
+<body>
+
+<input id="password" placeholder="Yükleme Şifresi">
+<button onclick="selectFile()">Dosya Seç</button>
+<label style="margin-top:10px; display:block;">
+    <input type="checkbox" id="is_global">
+    Global olsun
+</label>
+
+<button onclick="upload()">Yükle</button>
+
+<div class="bar">
+    <div class="bar-inner" id="progress"></div>
+</div>
+
+<p id="percent">0%</p>
+
+<script>
+let selectedFile = null;
+
+async function selectFile() {
+    const result = await pywebview.api.select_file();
+
+    if (!result) {
+        alert("Dosya seçilmedi");
+        return;
+    }
+
+    // Python string döndürüyorsa
+    if (typeof result === "string") {
+        selectedFile = result;
+    }
+    // Dict döndürüyorsa
+    else if (result.filePaths && result.filePaths.length > 0) {
+        selectedFile = result.filePaths[0];
+    }
+
+    if (selectedFile) {
+        alert("Seçildi:\n" + selectedFile);
+    }
+}
+
+function upload() {
+    if (!selectedFile) {
+        alert("Dosya seçilmedi");
+        return;
+    }
+
+    pywebview.api.start_upload(
+        selectedFile,
+        password.value,
+        document.getElementById("is_global").checked
+    );
+}
+</script>
+<script>
+window.setProgress = function(p) {
+    const bar = document.getElementById("progress");
+    const txt = document.getElementById("percent");
+    if (bar) bar.style.width = p + "%";
+    if (txt) txt.innerText = p + "%";
+}
+</script>
+
+
+
+</body>
+</html>

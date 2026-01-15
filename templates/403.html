@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>403 – Erişim Reddedildi</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{url_for('static'),filename='favicon.ico'}}">
+    <link rel="icon" href="{{url_for('static',filename='favicon.ico')}}">
     <style>
         body {
             margin: 0;
@@ -84,9 +84,16 @@
             Buraya erişim yetkin bulunmuyor.
         </p>
         <a href="/">Ana Sayfaya Dön</a>
+        <a href="javascript:history.back()" class="button secondary">Geri Git</a>
         <div class="hint">
             HTTP 403 • Forbidden
         </div>
+    <footer style="text-align:center; color:#888; font-size:14px; padding:20px;">
+  © <span id="year"></span> infinitesoft-tr. Tüm hakları saklıdır.
+</footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
     </div>
 
 </body>
