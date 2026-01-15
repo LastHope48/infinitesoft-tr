@@ -51,7 +51,7 @@ class Account(db.Model):
     password = db.Column(db.String(100), nullable=False)
 
 class Card(db.Model):
-    __table_args__={"schema":"card"}
+    __table_args__={"schema":"system"}
     __tablename__="card_table"
     title=db.Column(db.String(100),nullable=False)
     subtitle=db.Column(db.String(100),nullable=False)
