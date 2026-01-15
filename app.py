@@ -2,7 +2,7 @@ import os,uuid
 from flask import Flask,render_template,render_template_string,request,send_from_directory,send_file,redirect,session,url_for,Response,abort
 import requests
 from werkzeug.security import check_password_hash,generate_password_hash
-from sqlalchemy import func
+from sqlalchemy import func,text
 import io,zipfile
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
@@ -51,7 +51,7 @@ class Account(db.Model):
     password = db.Column(db.String(100), nullable=False)
 
 class Card(db.Model):
-    __bind_key__="cards"
+    __table_args__={"schema":"card"}
     __tablename__="card_table"
     title=db.Column(db.String(100),nullable=False)
     subtitle=db.Column(db.String(100),nullable=False)
@@ -563,5 +563,12 @@ def wrong_direction_to_come(e):
 def internal_error(e):
     return render_template("500.html"), 500
 
+with app.app_context():
+    db.session.execute(text("CREATE SCHEMA IF NOT EXISTS auth"))
+    db.session.execute(text("CREATE SCHEMA IF NOT EXISTS storage"))
+    db.session.execute(text("CREATE SCHEMA IF NOT EXISTS system"))
+    db.session.commit()
+
+    db.create_all()
 if __name__=="__main__":
     app.run()
